@@ -1,5 +1,11 @@
 const axios = require('axios');
 const cron = require('node-cron');
+const express = require('express');
+const app = express();
+
+const cors = require('cors');
+app.use(cors());
+
 
 const dotenv = require('dotenv');
 dotenv.config({path: __dirname + '/.env'});
@@ -43,3 +49,7 @@ const cryptoInit = () => {
 };
 
 cron.schedule('* * * * *', cryptoInit);
+
+app.listen(process.env.PORT || 3000, () => {
+    console.log('running on ', process.env.PORT||3000);
+});
