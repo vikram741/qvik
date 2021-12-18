@@ -60,6 +60,7 @@ const processCrypto = (hist) => {
             maxChangeIdx = idx;
         };
     }
+    console.log(maxChange);
 
     if (maxChangeIdx != -1 && current.value > (hist[maxChangeIdx].value * minChangeRequired)) {
         return {
@@ -76,6 +77,7 @@ const doAllCrypto = () => {
     const onFire = [];
 
     for (const key in CACHE) {
+        console.log(key);
         const result = processCrypto(CACHE[key].price);
 
         if (result.pumping) {
