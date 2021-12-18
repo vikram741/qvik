@@ -15,7 +15,7 @@ client.login(process.env.DISCORD_TOKEN);
 
 const notifyVikram = (data) => {
     client.users.fetch('849240584036024331', false).then((user) => {
-        user.send(data);
+        user.send(JSON.stringify(data));
     });
 };
 

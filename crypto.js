@@ -42,10 +42,10 @@ const getCrypto = (query) => {
 
 
 const cryptoInit = () => {
-    // getCrypto(1, 25, process.env.cmc_api_key_1);
-    getCrypto({start: 40, limit: 10, key: process.env.cmc_api_key_3});
-    // getCrypto(51, 75, process.env.cmc_api_key_2);
-    // getCrypto(76, 100, process.env.cmc_api_key_4);
+    getCrypto({start: 1, limit: 25, key: process.env.cmc_api_key_1});
+    getCrypto({start: 26, limit: 25, key: process.env.cmc_api_key_2});
+    getCrypto({start: 51, limit: 25, key: process.env.cmc_api_key_3});
+    getCrypto({start: 76, limit: 25, key: process.env.cmc_api_key_4});
 };
 
 cron.schedule('* * * * *', cryptoInit);
