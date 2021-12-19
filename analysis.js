@@ -26,11 +26,23 @@ const CACHE = {};
  * }
  */
 const NotifiedCryptos = {};
-const minChangeRequired = 1.01;
+
+// 2% change
+const MinChangeRequired = 1.02;
+
+// in 20 minutes
+const MaxMinutes = 20;
+
+// Max change (expecting 5% from here)
+const Max24Change = 3;
+
+// Min gap between notifications
+const MinGapBetweeenNotification = 3;
+
 
 const addCrypto = (crypto) => {
     if (CACHE[crypto.symbol]) {
-        if (CACHE[crypto.symbol].price.length >= 20) {
+        if (CACHE[crypto.symbol].price.length >= MaxMinutes) {
             CACHE[crypto.symbol].price.shift();
         }
         CACHE[crypto.symbol].price.push({
@@ -53,23 +65,49 @@ const addCrypto = (crypto) => {
 const processCrypto = (hist) => {
     let maxChangeIdx = -1;
     let maxChange = 0;
+    let ups = 0;
+    let downs = 0;
     const current = hist[hist.length - 1];
     for (const idx in hist) {
         if (current.value - hist[idx].value > maxChange) {
             maxChange = current.value - hist[idx].value;
             maxChangeIdx = idx;
         };
+        if (idx!=0) {
+            if (hist[idx]>hist[idx-1]) {
+                ups = ups+1;
+            } else if (hist[idx]<hist[idx-1]) {
+                downs = downs+1;
+            }
+        }
     }
 
-    if (maxChangeIdx != -1 && current.value > (hist[maxChangeIdx].value * minChangeRequired)) {
+    if (maxChangeIdx != -1 && current.value > (hist[maxChangeIdx].value * MinChangeRequired)) {
         return {
             pumping: true,
             timeGap: moment(current.time).diff(hist[maxChangeIdx].time, 'minutes'),
             change: ((current.value - hist[maxChangeIdx].value) * 100) / (hist[maxChangeIdx].value),
+            ups,
+            downs,
         };
     }
 
     return {pumping: false};
+};
+
+/**
+ * @param {{symbol, name, timeGap, change, ups, downs }} hotCrypto
+ * @param {Number} rallyCount
+ */
+const notifyAndUpdate = (hotCrypto, rallyCount)=>{
+    hotCrypto.rallyCount = rallyCount;
+    notifyVikram(hotCrypto);
+    NotifiedCryptos[hotCrypto.symbol] = {
+        change: hotCrypto.change,
+        timeGap: hotCrypto.timeGap,
+        timeStamp: new Date(),
+        rallyCount,
+    };
 };
 
 const doAllCrypto = () => {
@@ -78,26 +116,20 @@ const doAllCrypto = () => {
     for (const key in CACHE) {
         const result = processCrypto(CACHE[key].price);
 
-        // if (result.pumping) {
-        //     console.log(({
-        //         name: CACHE[key].name,
-        //         timeGap: result.timeGap,
-        //         change: result.change,
-        //     }));
-        // }
-
-        if (result.pumping && CACHE[key].percent_change_24h < 7) {
+        if (result.pumping && CACHE[key].percent_change_24h < Max24Change) {
             onFire.push({
                 symbol: key,
                 name: CACHE[key].name,
                 timeGap: result.timeGap,
                 change: result.change,
+                ups: result.ups,
+                downs: result.downs,
             });
         }
     }
 
     onFire.sort((a, b) => {
-        return (a.change - b.change);
+        return (a.change/a.timeGap - b.change/b.timeGap);
     });
 
     for (const idx in onFire) {
@@ -106,24 +138,15 @@ const doAllCrypto = () => {
         if (NotifiedCryptos[onFire[idx].symbol]) {
             const note = NotifiedCryptos[onFire[idx].symbol];
 
-            if (moment().diff(note.timeStamp, 'minutes') > 5 ||
-(note.change * 1.5 < onFire[idx].change) ||
-(note.timeGap * 1.5 < onFire[idx].timeGap)) {
-                notifyVikram(onFire[idx]);
-
-                NotifiedCryptos[onFire[idx].symbol] = {
-                    change: onFire[idx].change,
-                    timeGap: onFire[idx].timeGap,
-                    timeStamp: new Date(),
-                };
+            if (moment().diff(note.timeStamp, 'minutes') > MaxMinutes) {
+                notifyAndUpdate(onFire[idx], 1);
+            } else if (moment().diff(note.timeStamp, 'minutes') > MinGapBetweeenNotification ||
+            (note.change * 1.5 < onFire[idx].change) ||
+            (note.timeGap * 1.5 < onFire[idx].timeGap)) {
+                notifyAndUpdate(onFire[idx], note.rallyCount+1);
             }
         } else {
-            notifyVikram(onFire[idx]);
-            NotifiedCryptos[onFire[idx].symbol] = {
-                change: onFire[idx].change,
-                timeGap: onFire[idx].timeGap,
-                timeStamp: new Date(),
-            };
+            notifyAndUpdate(onFire[idx], 1);
         }
         console.log((NotifiedCryptos[onFire[idx].symbol]));
     }
@@ -159,3 +182,18 @@ module.exports = {
     addCrypto,
 };
 
+
+/**
+    TO BE DONE:
+        Total ups and downs.
+        links
+        -> coinmarketcap - `https://coinmarketcap.com/currencies/${crypto.name}/`
+        -> coingecko - `https://www.coingecko.com/en/coins/${crypto.name}`
+        -> binance - `https://www.binance.com/en/trade/${crypto.symbol}_USDT`
+        -> cryptopanic - `https://cryptopanic.com/news/${crypto.name}/`
+        -> coinmarketcal - `https://coinmarketcal.com/en/coin/${crypto.name}`
+        embed
+        1% in, 2% in, ..
+        30min, 1hr, 2hr change ..
+        algo - near candles = more weight
+ */
