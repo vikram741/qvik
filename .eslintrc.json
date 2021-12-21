@@ -16,7 +16,7 @@
         "indent": ["error", 4],
         "no-multi-spaces": ["error"],
         "linebreak-style": 0,
-        "max-len": ["error", { "code": 120 }],
+        "max-len": ["error", { "code": 130 }],
         "require-jsdoc": 0
       }
 }

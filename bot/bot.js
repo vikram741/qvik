@@ -1,56 +1,51 @@
 global.Discord = require('discord.js');
 global.client = new Discord.Client();
 
-const embed = require('./embed');
-
-const color = {
-    DARK_RED: '#ff0000',
-    DARK_GREEN: '#208A17',
-    BLURPLE: '#7289da',
-    GREY: '#575757',
-    DARK_BLUE: '#00086E',
-    YELLOW: '#ffc107',
-};
-
-
-/* ============================================== */
-/* =================== EVENTS =================== */
-/* ============================================== */
+// const embed = require('./embed');
+const {color, VIKRAM_ID, DISCORD_TOKEN} = require('../constants');
 
 // ------------------------------ On Ready -----------------------------
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
+    notifyVikram({
+        name: 'Bitcoin',
+        symbol: 'BTC',
+        change: 2,
+        timeGap: 6,
+        ups: 3,
+        downs: 9,
+    });
 });
 
-client.login(process.env.DISCORD_TOKEN);
 
-const notifyVikram = (data) => {
-    client.users.fetch('849240584036024331', false).then((user) => {
-        user.send(embed.getEmbed(color.GREY,
-            `Crypto: ${data.name}
-            Pumped ${data.change} in ${data.timeGap}
-            Ups: ${data.ups}, Downs: ${data.downs}
+client.login(DISCORD_TOKEN);
 
-            -> Coinmarketcap - https://coinmarketcap.com/currencies/${data.name}/
-            -> Coingecko - https://www.coingecko.com/en/coins/${data.name}
-            -> Binance - https://www.binance.com/en/trade/${data.symbol}_USDT
-            -> Cryptopanic - https://cryptopanic.com/news/${data.name}/
-            -> Coinmarketcal - https://coinmarketcal.com/en/coin/${data.name}
-        `));
+const notifyVikram = (crypto) => {
+    client.users.fetch(VIKRAM_ID, false).then((user) => {
+        const embed = new Discord.MessageEmbed()
+            .setColor(color.GREY)
+            .setTitle(crypto.name)
+            .setDescription(`Pumped ${crypto.change}% in ${crypto.timeGap}mins.
+Ups: ${crypto.ups}, Downs: ${crypto.downs}`)
+            .addField('Coinmarketcap', `[Click here](https://coinmarketcap.com/currencies/${crypto.name.toLowerCase()}/)`, true)
+            .addField('Coingecko', `[Click here](https://www.coingecko.com/en/coins/${crypto.name.toLowerCase()})`, true)
+            .addField('Binance', `[Click here](https://www.binance.com/en/trade/${crypto.symbol}_USDT)`, true)
+            .addField('Cryptopanic', `[Click here](https://cryptopanic.com/news/${crypto.name.toLowerCase()}/)`, true)
+            .addField('Coinmarketcal', `[Click here](https://coinmarketcal.com/en/coin/${crypto.name.toLowerCase()})`, true);
+
+        // Coinmarketcap - https://coinmarketcap.com/currencies/${crypto.name.toLowerCase()}/
+        // Coingecko - https://www.coingecko.com/en/coins/${crypto.name.toLowerCase()}
+        // Binance - https://www.binance.com/en/trade/${crypto.symbol}_USDT
+        // Cryptopanic - https://cryptopanic.com/news/${crypto.name.toLowerCase()}/
+        // Coinmarketcal - https://coinmarketcal.com/en/coin/${crypto.name.toLowerCase()}
+        //         `, crypto.name);
+        user.send({embed});
+    }).catch((err)=>{
+        console.log(err);
     });
 };
 
 module.exports = {
     notifyVikram,
 };
-
-// client.commands = new Discord.Collection();
-
-// const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-// const prefix = "$";
-
-// for (const file of commandFiles) {
-//     const command = require(`./commands/${file}`);
-//     client.commands.set(command.name, command);
-// }
 
