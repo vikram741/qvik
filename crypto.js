@@ -48,7 +48,7 @@ const cryptoInit = () => {
     getCrypto({start: 76, limit: 25, key: process.env.cmc_api_key_4});
 };
 
-cron.schedule('* * * * *', cryptoInit);
+cron.schedule('*/2 * * * *', cryptoInit);
 
 app.listen(process.env.PORT || 3000, () => {
     console.log('running on ', process.env.PORT||3000);

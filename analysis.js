@@ -27,14 +27,14 @@ const CACHE = {};
  */
 const NotifiedCryptos = {};
 
-// 2% change
-const MinChangeRequired = 1.02;
+// 3% change
+const MinChangeRequired = 1.03;
 
-// in 20 minutes
+// in 40 minutes
 const MaxMinutes = 20;
 
 // Max change (expecting 5% from here)
-const Max24Change = 3;
+const Max24Change = 10;
 
 // Min gap between notifications
 const MinGapBetweeenNotification = 3;
