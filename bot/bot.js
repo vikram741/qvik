@@ -15,11 +15,6 @@ client.on('ready', async () => {
     //     ups: 3,
     //     downs: 9,
     // });
-    // client.channels.cache.forEach(async (channel) => {
-    //     console.log(channel);
-    //     fetched = await channel.fetchMessages();
-    //     channel.bulkDelete(fetched);
-    // });
 });
 
 
@@ -32,11 +27,11 @@ const notifyVikram = (crypto) => {
             .setTitle(crypto.name)
             .setDescription(`Pumped ${crypto.change}% in ${crypto.timeGap}mins.\n`+
             `Ups: ${crypto.ups}, Downs: ${crypto.downs}\n`+
-            `[Coinmarketcap](https://coinmarketcap.com/currencies/${crypto.name.toLowerCase()}/) | ` +
-            `[CoinGecko](https://www.coingecko.com/en/coins/${crypto.name.toLowerCase()}) | ` +
+            `[Coinmarketcap](https://coinmarketcap.com/currencies/${crypto.name.toLowerCase().replace(' ', '-')}/) | ` +
+            `[CoinGecko](https://www.coingecko.com/en/coins/${crypto.name.toLowerCase().replace(' ', '-')}) | ` +
             `[Binance](https://www.binance.com/en/trade/${crypto.symbol}_USDT) | ` +
-            `[Cryptopanic](https://cryptopanic.com/news/${crypto.name.toLowerCase()}/) | ` +
-            `[Coinmarketcal](https://coinmarketcal.com/en/coin/${crypto.name.toLowerCase()}) | `);
+            `[Cryptopanic](https://cryptopanic.com/news/${crypto.name.toLowerCase().replace(' ', '-')}/) | ` +
+            `[Coinmarketcal](https://coinmarketcal.com/en/coin/${crypto.name.toLowerCase().replace(' ', '-')}) | `);
 
         // Coinmarketcap - https://coinmarketcap.com/currencies/${crypto.name.toLowerCase()}/
         // Coingecko - https://www.coingecko.com/en/coins/${crypto.name.toLowerCase()}
