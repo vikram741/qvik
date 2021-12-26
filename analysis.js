@@ -74,9 +74,9 @@ const processCrypto = (hist) => {
             maxChangeIdx = idx;
         };
         if (idx!=0) {
-            if (hist[idx]>hist[idx-1]) {
+            if (hist[idx].value>hist[idx-1].value) {
                 ups = ups+1;
-            } else if (hist[idx]<hist[idx-1]) {
+            } else if (hist[idx].value<hist[idx-1].value) {
                 downs = downs+1;
             }
         }
