@@ -28,16 +28,16 @@ const CACHE = {};
 const NotifiedCryptos = {};
 
 // 3% change
-const MinChangeRequired = 1.03;
+const MinChangeRequired = 1.02;
 
 // in 40 minutes
 const MaxMinutes = 20;
 
 // Max change (expecting 5% from here)
-const Max24Change = 10;
+// const Max24Change = 10;
 
 // Min gap between notifications
-const MinGapBetweeenNotification = 3;
+const MinGapForRally = 30;
 
 
 const addCrypto = (crypto) => {
@@ -82,6 +82,7 @@ const processCrypto = (hist) => {
         }
     }
 
+    // if (maxChangeIdx != -1 && current.value > (hist[maxChangeIdx].value * MinChangeRequired)) {
     if (maxChangeIdx != -1 && current.value > (hist[maxChangeIdx].value * MinChangeRequired)) {
         return {
             pumping: true,
@@ -108,6 +109,7 @@ const notifyAndUpdate = (hotCrypto, rallyCount)=>{
         timeStamp: new Date(),
         rallyCount,
     };
+    CACHE[hotCrypto.symbol].price = [];
 };
 
 const doAllCrypto = () => {
@@ -116,7 +118,8 @@ const doAllCrypto = () => {
     for (const key in CACHE) {
         const result = processCrypto(CACHE[key].price);
 
-        if (result.pumping && CACHE[key].percent_change_24h < Max24Change) {
+        // if (result.pumping && CACHE[key].percent_change_24h < Max24Change) {
+        if (result.pumping) {
             onFire.push({
                 symbol: key,
                 name: CACHE[key].name,
@@ -138,11 +141,9 @@ const doAllCrypto = () => {
         if (NotifiedCryptos[onFire[idx].symbol]) {
             const note = NotifiedCryptos[onFire[idx].symbol];
 
-            if (moment().diff(note.timeStamp, 'minutes') > MaxMinutes) {
+            if (moment().diff(note.timeStamp, 'minutes') > MinGapForRally) {
                 notifyAndUpdate(onFire[idx], 1);
-            } else if (moment().diff(note.timeStamp, 'minutes') > MinGapBetweeenNotification ||
-            (note.change * 1.5 < onFire[idx].change) ||
-            (note.timeGap * 1.5 < onFire[idx].timeGap)) {
+            } else {
                 notifyAndUpdate(onFire[idx], note.rallyCount+1);
             }
         } else {
