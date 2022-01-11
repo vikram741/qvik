@@ -12,7 +12,7 @@ const {notifyVikram} = require('./bot/bot');
  *          value,
  *          time
  *      }],
- *      percent_change_24h
+ *      percentChange24h
  *    }
  * }
  */
@@ -49,7 +49,7 @@ const addCrypto = (crypto) => {
             value: crypto.value,
             time: crypto.time,
         });
-        CACHE[crypto.symbol].percent_change_24h = crypto.percent_change_24h;
+        CACHE[crypto.symbol].percentChange24h = crypto.percentChange24h;
     } else {
         CACHE[crypto.symbol] = {
             name: crypto.name,
@@ -57,7 +57,7 @@ const addCrypto = (crypto) => {
                 value: crypto.value,
                 time: crypto.time,
             }],
-            percent_change_24h: crypto.percent_change_24h,
+            percentChange24h: crypto.percentChange24h,
         };
     }
 };
@@ -118,7 +118,7 @@ const doAllCrypto = () => {
     for (const key in CACHE) {
         const result = processCrypto(CACHE[key].price);
 
-        // if (result.pumping && CACHE[key].percent_change_24h < Max24Change) {
+        // if (result.pumping && CACHE[key].percentChange24h < Max24Change) {
         if (result.pumping) {
             onFire.push({
                 symbol: key,
@@ -158,7 +158,7 @@ const doAllCrypto = () => {
 //     symbol: 'BTC',
 //     price: 5000,
 //     time: moment(),
-//     percent_change_24h: 5,
+//     percentChange24h: 5,
 // };
 
 

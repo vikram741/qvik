@@ -12,43 +12,37 @@ dotenv.config({path: __dirname + '/.env'});
 
 const {addCrypto, doAllCrypto} = require('./analysis');
 
-const getCrypto = (query) => {
-    axios.get('https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest', {
-        params: {
-            start: query.start,
-            limit: query.limit,
-        },
-        headers: {
-            'X-CMC_PRO_API_KEY': query.key,
-        },
-    }).then((res) => {
-        const data = res.data.data;
+const getCrypto = async (query) => {
+    const url = 'https://coinmarketcap.com/';
+    const data = await axios.get(url);
+    const root = parse(data.data);
+    const htmlJSON = root.querySelector('tbody');
 
-        data.forEach((item) => {
-            addCrypto({
-                name: item.name,
-                symbol: item.symbol,
-                value: item.quote.USD.price,
-                time: new Date(item.quote.USD.last_updated),
-                percent_change_24h: item.quote.USD.percent_change_24h,
-            });
+    const crypto = [];
+
+    for (let i = 1; i < htmlJSON.childNodes.length; i += 2) {
+        const name = htmlJSON.childNodes[i].childNodes[3].childNodes[1].childNodes[0]._rawText;
+        const time = new Date(dateString);
+        const value = htmlJSON.childNodes[i].childNodes[5].childNodes[0].childNodes[0]._rawText;
+        const percentChange24h = htmlJSON.childNodes[i].childNodes[6].childNodes.length === 3;
+        crypto.push({name, time, value, percentChange24h});
+    }
+
+    crypto.forEach((item) => {
+        addCrypto({
+            name: item.name,
+            symbol: item.symbol,
+            value: item.quote.USD.price,
+            time: new Date(item.quote.USD.last_updated),
+            percentChange24h: item.quote.USD.percentChange24h,
         });
-
-        doAllCrypto();
-    }).catch((err) => {
-        console.log(err);
     });
+
+    doAllCrypto();
 };
 
 
-const cryptoInit = () => {
-    getCrypto({start: 1, limit: 25, key: process.env.cmc_api_key_1});
-    getCrypto({start: 26, limit: 25, key: process.env.cmc_api_key_2});
-    getCrypto({start: 51, limit: 25, key: process.env.cmc_api_key_3});
-    getCrypto({start: 76, limit: 25, key: process.env.cmc_api_key_4});
-};
-
-cron.schedule('*/2 * * * *', cryptoInit);
+cron.schedule('*/2 * * * *', getCrypto);
 
 app.listen(process.env.PORT || 3000, () => {
     console.log('running on ', process.env.PORT||3000);
